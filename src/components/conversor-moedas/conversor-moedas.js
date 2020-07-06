@@ -5,10 +5,14 @@ import {
 } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+
 import ListarMoedas from '../listar-moedas/listar-moedas';
 import './conversor-moedas.css';
 
 function ConversorMoedas() {
+
+	const URL = 'http://data.fixer.io/api/latest?access_key=d9c0a0bf2977370ff6bfc7822707eabd';
 
 	const [valor, setValor] = useState('1');
 	const [moedaDe, setMoedaDe] = useState('BRL');
@@ -17,7 +21,7 @@ function ConversorMoedas() {
 	const [formValidado, setFormValidado] = useState(false);
 	const [exibirModal, setExibirModal] = useState(false);
 	const [resultadoConversao, setResultadoConversao] = useState('');
-
+	const [exibirMensagemErro, setExibirMensagemErro] = useState(false);
 	function handleValor(event) {
 		setValor(event.target.value.replace(/\D/, ''));
 	}
@@ -34,8 +38,25 @@ function ConversorMoedas() {
 		event.preventDefault();
 		
 		if(event.currentTarget.checkValidity() === true) {
-			setExibirModal(true);
-			setFormValidado(true);
+			setExibirSpinner(true);
+
+			axios.get(URL)
+				.then((res) => {
+					
+					const cotacao = obterCotacao(res.data);
+
+					if(cotacao){
+						setExibirMensagemErro(false);
+						setResultadoConversao(`${valor} ${moedaDe} = ${cotacao} ${moedaPara}`);
+						setExibirModal(true);
+						setExibirSpinner(false);
+					} else {
+						exibirErro();
+					}
+				})
+				.catch((err) => {
+					exibirErro();
+				});
 		}
 	}
 
@@ -47,10 +68,28 @@ function ConversorMoedas() {
 		setExibirModal(false);
 	}
 
+	function obterCotacao(dadosCotacao) {
+
+		if(!dadosCotacao ||  dadosCotacao.success !== true) {
+			return false;
+		}
+
+		const cotacaoDe = dadosCotacao.rates[moedaDe];
+		const cotacaoPara = dadosCotacao.rates[moedaPara];
+
+		const cotacao = (1 / cotacaoDe * cotacaoPara) * valor;
+
+		return cotacao.toFixed(2);
+	}
+
+	function exibirErro() {
+		setExibirSpinner(false);
+		setExibirMensagemErro(true);
+	}
 	return (
 		<>
 			<h1>Conversor de moedas</h1>
-			<Alert variant="danger" show={false}>
+			<Alert variant="danger" show={exibirMensagemErro}>
 				Erro obtendo dados de conversão. Tente novamente
 		</Alert>
 			<Jumbotron>
