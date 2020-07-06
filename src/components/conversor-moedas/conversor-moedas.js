@@ -14,7 +14,7 @@ function ConversorMoedas() {
 
 	const URL = 'http://data.fixer.io/api/latest?access_key=d9c0a0bf2977370ff6bfc7822707eabd';
 
-	const [valor, setValor] = useState('1');
+	const [valor, setValor] = useState('');
 	const [moedaDe, setMoedaDe] = useState('BRL');
 	const [moedaPara, setMoedaPara] = useState('USD');
 	const [exibirSpinner, setExibirSpinner] = useState(false);
@@ -88,7 +88,7 @@ function ConversorMoedas() {
 	}
 	return (
 		<>
-			<h1>Conversor de moedas</h1>
+			<h1 className="text-center">Conversor de moedas</h1>
 			<Alert variant="danger" show={exibirMensagemErro}>
 				Erro obtendo dados de conversão. Tente novamente
 		</Alert>
@@ -97,7 +97,7 @@ function ConversorMoedas() {
 					<Form.Row>
 						<Col sm="3">
 							<Form.Control
-								placeholder="0"
+								placeholder="Digite um valor"
 								value={valor}
 								onChange={handleValor}
 								required />
